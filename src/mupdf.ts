@@ -439,6 +439,15 @@ function fromString(ptr: Pointer<"char">): string {
 	return libmupdf.UTF8ToString(ptr)
 }
 
+function GBKToString(ptr: number) {
+  let index = 0
+  const heap = libmupdf.HEAPU8
+  while (heap[ptr + index] !== 0) index++
+  const gbkBuffer = heap.subarray(ptr, ptr + index)
+  const decoder = new TextDecoder('gbk')
+  return decoder.decode(gbkBuffer)
+}
+
 function fromStringFree(ptr: Pointer<"char">): string {
 	let str = libmupdf.UTF8ToString(ptr)
 	Free(ptr)
@@ -3892,7 +3901,7 @@ declare global {
 
 globalThis.$libmupdf_load_font_file = function (name, script) {
 	if ($libmupdf_load_font_file_js) {
-		var buf = $libmupdf_load_font_file_js(fromString(name), fromString(script))
+		var buf = $libmupdf_load_font_file_js(GBKToString(name), GBKToString(script))
 		if (buf)
 			return buf.pointer
 	}
